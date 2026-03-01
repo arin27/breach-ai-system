@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 30px;
+      background: #f4f6f8;
+    }
+
+    button {
+      padding: 10px 18px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    table {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: #007bff;
+      color: white;
+    }
+
+    .back {
+      display:inline-block;
+      margin-bottom:20px;
+      padding:8px 16px;
+      background:#3b82f6;
+      color:white;
+      text-decoration:none;
+      border-radius:6px;
+    }
+  </style>
+
+</head>
+<body>
+
+  <h1>👑 Admin Dashboard</h1>
+
+<a href="/index.html" class="back">⬅ Back to Home</a>
+
+<button onclick="loadUsers()">View Users</button>
+
+  <table id="usersTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody id="usersBody"></tbody>
+  </table>
+
+  <script>
+    async function loadUsers() {
+      try {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch("/api/admin/users", {
+          headers: {
+            Authorization: "Bearer " + token,
+          },
+        });
+
+        const data = await res.json();
+
+        const table = document.getElementById("usersTable");
+        const body = document.getElementById("usersBody");
+
+        body.innerHTML = "";
+
+        data.users.forEach(user => {
+          const row = `
+            <tr>
+              <td>${user.name}</td>
+              <td>${user.email}</td>
+              <td>${user.role}</td>
+              <td>${new Date(user.createdAt).toLocaleString()}</td>
+            </tr>
+          `;
+          body.innerHTML += row;
+        });
+
+        table.style.display = "table";
+
+      } catch (err) {
+        alert("Failed to load users");
+        console.error(err);
+      }
+    }
+  </script>
+
+</body>
+</html>

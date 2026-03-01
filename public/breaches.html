@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Recent Breaches</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 30px;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+    }
+
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 85%;
+      background: white;
+      color: black;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn {
+      display:inline-block;
+      margin-top:20px;
+      padding:10px 22px;
+      background:#3b82f6;
+      color:white;
+      text-decoration:none;
+      border-radius:6px;
+      font-weight:bold;
+    }
+  </style>
+
+</head>
+<body>
+
+  <h1>🚨 Recent Data Breaches</h1>
+
+  <table id="breachTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Breach Source</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody id="breachBody"></tbody>
+  </table>
+
+<a class="btn" href="/index.html">⬅ Back to Home</a>
+
+  <script>
+    async function loadBreaches() {
+      try {
+        const res = await fetch("/api/breach/all");
+        const data = await res.json();
+
+        const table = document.getElementById("breachTable");
+        const body = document.getElementById("breachBody");
+
+        body.innerHTML = "";
+
+        data.breaches.forEach(b => {
+          const row = `
+            <tr>
+              <td>${b.email}</td>
+              <td>${b.breachSource}</td>
+              <td>${new Date(b.breachDate).toLocaleDateString()}</td>
+            </tr>
+          `;
+          body.innerHTML += row;
+        });
+
+        table.style.display = "table";
+
+      } catch (err) {
+        console.error("Failed to load breaches:", err);
+      }
+    }
+
+    loadBreaches();
+  </script>
+
+</body>
+</html>

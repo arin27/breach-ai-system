@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Breach Checker</title>
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding: 40px;
+    }
+
+input {
+  padding: 12px;
+  width: 280px;
+  border-radius: 6px;
+  border: none;
+  margin-right: 10px;
+}
+
+button {
+  padding: 12px 20px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.result {
+  margin-top: 30px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.safe { color: #22c55e; }
+.breached { color: #ef4444; }
+
+ul {
+  margin-top: 15px;
+  list-style: none;
+  padding: 0;
+}
+
+.back {
+  display:inline-block;
+  margin-top:25px;
+  padding:10px 20px;
+  background:#3b82f6;
+  color:white;
+  text-decoration:none;
+  border-radius:6px;
+}
+
+.risk {
+  margin-top: 18px;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+  </style>
+</head>
+<body>
+
+  <h1>🛡️ Breach Checker</h1>
+  <p>Check if your email appeared in known data breaches</p>
+
+  <input id="emailInput" placeholder="Enter email..." />
+  <button onclick="checkBreach()">Check</button>
+
+  <div id="result" class="result"></div>
+
+  <!-- ✅ RISK SCORE -->
+
+  <div id="riskScore" class="risk"></div>
+
+  <ul id="breachList"></ul>
+
+<a href="/index.html" class="back">⬅ Back to Home</a>
+
+  <script>
+    async function checkBreach() {
+      const email = document.getElementById("emailInput").value;
+      const resultDiv = document.getElementById("result");
+      const list = document.getElementById("breachList");
+      const riskDiv = document.getElementById("riskScore");
+
+      list.innerHTML = "";
+      riskDiv.innerHTML = "";
+      resultDiv.innerHTML = "Checking...";
+
+      try {
+        const res = await fetch("/api/breach/check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await res.json();
+
+        // ✅ BREACH MESSAGE
+        if (data.breached) {
+          resultDiv.innerHTML =
+            `⚠️ Found in ${data.breachCount} breach(es)!`;
+          resultDiv.className = "result breached";
+
+          data.breaches.forEach(b => {
+            list.innerHTML += `<li>🔴 ${b.breachSource}</li>`;
+          });
+        } else {
+          resultDiv.innerHTML = "✅ Good news — no breaches found.";
+          resultDiv.className = "result safe";
+        }
+
+        // ✅ RISK SCORE LOGIC
+        let riskText = "";
+        let riskColor = "";
+
+        if (!data.breached) {
+          riskText = "LOW";
+          riskColor = "#22c55e";
+        } else if (data.breachCount <= 2) {
+          riskText = "MEDIUM";
+          riskColor = "#f59e0b";
+        } else {
+          riskText = "HIGH";
+          riskColor = "#ef4444";
+        }
+
+        riskDiv.innerHTML = `Risk Score: ${riskText}`;
+        riskDiv.style.color = riskColor;
+
+      } catch (err) {
+        resultDiv.innerHTML = "Error checking breaches";
+        riskDiv.innerHTML = "";
+      }
+    }
+  </script>
+
+</body>
+</html>
